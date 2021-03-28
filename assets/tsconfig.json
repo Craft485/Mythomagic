@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "jsx": "react",
+        "outDir": "../out",
+        "removeComments": true
+    },
+    "include": ["public/**/*"],
+    "exclude": ["node_modules"],
+    "files": ["Card.tsx", "Card.test.tsx"]
+}
