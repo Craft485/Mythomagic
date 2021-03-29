@@ -2,10 +2,10 @@
     "compilerOptions": {
         "target": "esnext",
         "jsx": "react",
-        "outDir": "../out",
+        "outFile": "../tsc.built.js",
         "removeComments": true
     },
     "include": ["public/**/*"],
     "exclude": ["node_modules"],
-    "files": ["Card.tsx", "Card.test.tsx"]
+    "files": ["Card.tsx", "Game.ts", "Deck.ts", "Player.ts"]
 }

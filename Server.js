@@ -4,6 +4,7 @@ const http = require('http').createServer(app)
 const conf = require('./conf.json')
 const fs = require('fs')
 const io = require('socket.io')(http)
+const { Card, cardList, Game, Player, _tDeck, shuffle, Deck } = require('./tsc.built')
 require('colors')
 
 app.use(express.static('./public'))
@@ -38,8 +39,44 @@ fs.readdir('./public', (err, readData) => {
     })
 })
 
+const currentPlayers = {}
+const games = []
+let isCurrentGame = false
+
 io.on("connection", socket => {
     console.log(`Connection Received: ${socket.id}`.underline)
+
+    socket.on("join-game", args => {
+        if (isCurrentGame) {
+            // Using socket id for now, will change to some user id later
+            // We will also need to query a db for getting deck data when thats a thing
+            games[games.length - 1].join(socket.id)
+            isCurrentGame = false
+        } else {
+            // Create a new game instance and join it
+            const newGame = new Game()
+            games.push(newGame)
+            games[games.length -1].join(socket.id)
+            isCurrentGame = true
+        }
+        Object.defineProperty(currentPlayers, socket.id, { value: games[games.length -1] })
+        socket.emit('confirm', 'Joined a lobby')
+        console.log(games)
+    })
+
+    socket.on("draw", async (args) => {
+        console.log("Draw call received")
+        console.log(currentPlayers)
+        const g = currentPlayers[socket.id]
+        const newCard = await g.drawCard(socket.id)
+        console.log('newCard:')
+        console.log(newCard)
+        if (typeof newCard === Error) {
+            socket.emit('err', 'An error occured | ACTION: Draw Card')
+        } else {
+            socket.emit('new-card', newCard)
+        }
+    })
 
     socket.on('disconnect', () => { console.log(`${socket.id} Disconnected`.underline) })
 })
