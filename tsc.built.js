@@ -16,7 +16,7 @@ class Card {
     die() {
     }
 }
-const CHAOS = new Card({ name: 'Chaos', description: 'The primordial god of everything, all that is owes it\'s existence to Chaos', imageURL: './placeholdercard.png', health: 200, attack: 100, defense: 50 });
+const CHAOS = new Card({ name: 'Chaos', description: 'The primordial god of everything, all that is owes its existence to Chaos', imageURL: './placeholdercard.png', health: 200, attack: 100, defense: 50 });
 CHAOS.action = function (defendingCard) {
     if (!defendingCard.props.health)
         return;
