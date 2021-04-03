@@ -1,6 +1,7 @@
 interface _PlayerProps {
     deck: Deck
     id: string | number
+    isTakingTurn?: boolean
 }
 
 class Player {
@@ -10,7 +11,7 @@ class Player {
         // THIS IS NEEDED, ITS USED TO ACCESS THE PLAYER DECK
         // THIS CLASS ISN'T AS USELESS AS IT LOOKS
         this.props = props
-        this.isTakingTurn
+        this.isTakingTurn = props.isTakingTurn || false
     }
 }
 

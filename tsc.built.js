@@ -27,7 +27,7 @@ CHAOS.action = function (defendingCard) {
 const ZEUS = new Card({ name: 'Zeus', description: 'King of the olympian gods, son of Kronos, a powerful sky deity', attack: 70, health: 150, defense: 25, imageURL: './placeholdercard.png' });
 ZEUS.action = function (defendingCard) {
 };
-const cardList = [CHAOS, ZEUS];
+const cardList = [ZEUS, CHAOS];
 module.exports.Card = Card;
 module.exports.cardList = cardList;
 class Game {
@@ -36,22 +36,23 @@ class Game {
     }
     join(id) {
         if (this.Players.length < 3) {
-            const p = new Player({ id: id, deck: _tDeck });
+            const f = this.Players.length === 0 ? true : false;
+            const p = new Player({ id: id, deck: _tDeck, isTakingTurn: f });
             this.Players.push(p);
         }
-        console.log(this.Players);
-        console.log(this.Players[0]);
     }
     drawCard(playerID) {
         const player = this.Players.find(player => player.props.id === playerID);
-        console.log('player');
-        console.log(player);
-        const card = player.props.deck.draw();
-        console.log('card:');
-        if (!card)
-            console.error('Could not draw card');
-        console.log(card);
-        return card;
+        if (player.isTakingTurn && this.Players.length === 2) {
+            const card = player.props.deck.draw();
+            console.log('card:');
+            if (!card)
+                console.error('Could not draw card');
+            console.log(card);
+            this.Players[0].isTakingTurn = this.Players[0].isTakingTurn ? false : true;
+            this.Players[1].isTakingTurn = this.Players[1].isTakingTurn ? false : true;
+            return card;
+        }
     }
 }
 module.exports.Game = Game;
@@ -66,12 +67,15 @@ class Deck {
         this.props = props;
         this.cards = (function (props) {
             let arr = [];
-            props.deckMap.forEach((card, count) => {
+            props.deckMap.forEach((a) => {
+                const card = a[0];
+                let count = a[1];
                 while (count > 0) {
                     count--;
                     arr.push(card);
                 }
             });
+            console.log(`arr: ${arr}`);
             return arr;
         }(this.props));
     }
@@ -86,7 +90,7 @@ class Deck {
     }
 }
 const m = new Map;
-cardList.forEach(card => m.set(2, card));
+cardList.forEach(card => m.set(card.name, [card, 2]));
 const _tDeck = new Deck({ deckMap: m });
 module.exports.Deck = Deck;
 module.exports.shuffle = shuffle;
@@ -94,7 +98,7 @@ module.exports._tDeck = _tDeck;
 class Player {
     constructor(props) {
         this.props = props;
-        this.isTakingTurn;
+        this.isTakingTurn = props.isTakingTurn || false;
     }
 }
 module.exports.Player = Player;

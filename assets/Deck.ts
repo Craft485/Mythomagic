@@ -6,7 +6,7 @@ function shuffle(array: Array<any>) {
 }
 
 interface _DeckProps {
-    deckMap: Map<number, Card>
+    deckMap: Map<string, Array<any>>
 }
 
 class Deck {
@@ -18,19 +18,17 @@ class Deck {
             let arr: Array<Card> = []
             // Is this a bad way to acheive this? Probably.
             // Does it seem to work without chucking errors at the speed of light? Yes.
-            props.deckMap.forEach((card: Card, count: number) => {
+            props.deckMap.forEach((a) => {
+                const card: Card = a[0]
+                let count: number = a[1]
                 while (count > 0) {
                     count--
                     arr.push(card)
                 }
             })
+            console.log(`arr: ${arr}`)
             return arr
         }(this.props))
-        // (function ():number {
-        //     let l = 0
-        //     props.deckMap.forEach((card: Card, num: number) => l += num)
-        //     return l
-        // }())
     }
     draw(): Card {
         // Get a random card from the array, return its instance and then remove it
@@ -45,7 +43,7 @@ class Deck {
 }
 // Testing/Sample deck
 const m = new Map
-cardList.forEach(card => m.set(2, card))
+cardList.forEach(card => m.set(card.name, [card, 2]))
 const _tDeck: Deck = new Deck({ deckMap: m })
 
 module.exports.Deck = Deck

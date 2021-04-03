@@ -61,16 +61,12 @@ io.on("connection", socket => {
         }
         Object.defineProperty(currentPlayers, socket.id, { value: games[games.length -1] })
         socket.emit('confirm', 'Joined a lobby')
-        console.log(games)
     })
 
     socket.on("draw", async (args) => {
         console.log("Draw call received")
-        console.log(currentPlayers)
         const g = currentPlayers[socket.id]
         const newCard = await g.drawCard(socket.id)
-        console.log('newCard:')
-        console.log(newCard)
         if (typeof newCard === Error) {
             socket.emit('err', 'An error occured | ACTION: Draw Card')
         } else {
