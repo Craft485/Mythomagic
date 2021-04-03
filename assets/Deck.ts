@@ -18,7 +18,7 @@ class Deck {
             let arr: Array<Card> = []
             // Is this a bad way to acheive this? Probably.
             // Does it seem to work without chucking errors at the speed of light? Yes.
-            props.deckMap.forEach((a) => {
+            props.deckMap.forEach(a => {
                 const card: Card = a[0]
                 let count: number = a[1]
                 while (count > 0) {

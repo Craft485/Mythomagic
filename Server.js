@@ -74,6 +74,21 @@ io.on("connection", socket => {
         }
     })
 
+    socket.on("play", args => {
+        const cName = args[0]
+        const isValidCard = cardList.find(card => card.name.toLowerCase() === cName.toLowerCase())
+        const g = currentPlayers[socket.id]
+        // Find the player
+        const player = g.Players.find(player => player.props.id === socket.id)
+        if (isValidCard && g && player.isTakingTurn) {
+            // Tell the other player that a card was played
+            const p = g.Players.find(player => !player.isTakingTurn)
+            io.sockets.sockets.get(p.props.id).emit('op-play', isValidCard)
+        } else {
+            socket.emit('no-play', 'Invalid card or other condition')
+        }
+    })
+
     socket.on('disconnect', () => { console.log(`${socket.id} Disconnected`.underline) })
 })
 

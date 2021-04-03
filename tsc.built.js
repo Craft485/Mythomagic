@@ -27,7 +27,7 @@ CHAOS.action = function (defendingCard) {
 const ZEUS = new Card({ name: 'Zeus', description: 'King of the olympian gods, son of Kronos, a powerful sky deity', attack: 70, health: 150, defense: 25, imageURL: './placeholdercard.png' });
 ZEUS.action = function (defendingCard) {
 };
-const cardList = [ZEUS, CHAOS];
+const cardList = [CHAOS, ZEUS];
 module.exports.Card = Card;
 module.exports.cardList = cardList;
 class Game {
@@ -49,8 +49,6 @@ class Game {
             if (!card)
                 console.error('Could not draw card');
             console.log(card);
-            this.Players[0].isTakingTurn = this.Players[0].isTakingTurn ? false : true;
-            this.Players[1].isTakingTurn = this.Players[1].isTakingTurn ? false : true;
             return card;
         }
     }
@@ -67,7 +65,7 @@ class Deck {
         this.props = props;
         this.cards = (function (props) {
             let arr = [];
-            props.deckMap.forEach((a) => {
+            props.deckMap.forEach(a => {
                 const card = a[0];
                 let count = a[1];
                 while (count > 0) {

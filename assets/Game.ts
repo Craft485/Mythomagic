@@ -20,8 +20,8 @@ class Game {
             console.log('card:')
             if (!card) console.error('Could not draw card')
             console.log(card)
-            this.Players[0].isTakingTurn = this.Players[0].isTakingTurn ? false : true
-            this.Players[1].isTakingTurn = this.Players[1].isTakingTurn ? false : true
+            // this.Players[0].isTakingTurn = this.Players[0].isTakingTurn ? false : true
+            // this.Players[1].isTakingTurn = this.Players[1].isTakingTurn ? false : true
             return card
         }
         // If it isn't the players turn we are sending null, which can be dealt with client side
