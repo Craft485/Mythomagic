@@ -24,6 +24,7 @@ class Game {
         // And there will probaly be a check client side for if drawing is allowed so this case might end up not happening
     }
     endTurn() {
+        // Simply update game state
         this.Players[0].isTakingTurn = this.Players[0].isTakingTurn ? false : true
         this.Players[1].isTakingTurn = this.Players[1].isTakingTurn ? false : true
     } 
