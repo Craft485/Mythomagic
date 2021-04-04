@@ -5,7 +5,8 @@ window.onload = socket.emit("join-game")
 const Game = {
     myHand: {},
     myCardsInPlay: {},
-    opponentsHand: {}
+    opponentsHand: {},
+    isMyTurn: false
 }
 
 function draw() {
@@ -33,12 +34,20 @@ function action(myCard, opCard) {
     }
 }
 
+function endTurn() {
+    socket.emit('turn-end')
+    Game.isMyTurn = false
+}
+
 // Socket event listeners
-socket.on('confirm', msg => console.info(msg))
+socket.on('confirm', (msg, s) => {console.info(msg); Game.isMyTurn = s || false;})
 
 socket.on('err', errmsg => console.error(`Err: ${errmsg}`))
 
-socket.on('turn-ended', () => console.log('Turn ended, it is now your turn'))
+socket.on('turn-ended', () => {
+    console.log('Turn ended, it is now your turn')
+    Game.isMyTurn = true
+})
 
 socket.on('no-play', (msg) => {
     console.error(msg)
@@ -56,4 +65,14 @@ socket.on('op-play', card => {
     console.log("Opponent played card")
 })
 
-socket.on('attack-res', res => console.log(res))
+socket.on('attack-res', res => {
+    console.log(res)
+    // Update game state
+    if (Game.isMyTurn) {
+        Game.myCardsInPlay[res[0].name] = res[0]
+        Game.opponentsHand[res[1].name] = res[1]
+    } else if (!Game.isMyTurn) {
+        Game.opponentsHand[res[0].name] = res[0]
+        Game.myCardsInPlay[res[1].name] = res[1]
+    }
+})

@@ -60,7 +60,8 @@ io.on("connection", socket => {
             isCurrentGame = true
         }
         Object.defineProperty(currentPlayers, socket.id, { value: games[games.length -1] })
-        socket.emit('confirm', 'Joined a lobby')
+        const firstTurn = currentPlayers[socket.id].Players[0].id === socket.id ? true : false
+        socket.emit('confirm', 'Joined a lobby', firstTurn)
     })
 
     socket.on("draw", async (args) => {
