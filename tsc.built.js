@@ -13,16 +13,12 @@ class Card {
         h.className = "card-heading";
         return card;
     }
-    die() {
-    }
 }
 const CHAOS = new Card({ name: 'Chaos', description: 'The primordial god of everything, all that is owes its existence to Chaos', imageURL: './placeholdercard.png', health: 200, attack: 100, defense: 50 });
-CHAOS.action = function (defendingCard) {
-    if (!defendingCard.props.health)
-        return;
-    defendingCard.props.health -= this.props.attack;
-    if (defendingCard.props.health <= 0)
-        defendingCard.die();
+CHAOS.action = function (attackingCard, defendingCard) {
+    defendingCard.props.health -= attackingCard.props.attack;
+    attackingCard.props.defense += 10;
+    return [attackingCard, defendingCard];
 };
 const ZEUS = new Card({ name: 'Zeus', description: 'King of the olympian gods, son of Kronos, a powerful sky deity', attack: 70, health: 150, defense: 25, imageURL: './placeholdercard.png' });
 ZEUS.action = function (defendingCard) {
@@ -45,12 +41,14 @@ class Game {
         const player = this.Players.find(player => player.props.id === playerID);
         if (player.isTakingTurn && this.Players.length === 2) {
             const card = player.props.deck.draw();
-            console.log('card:');
             if (!card)
                 console.error('Could not draw card');
-            console.log(card);
             return card;
         }
+    }
+    endTurn() {
+        this.Players[0].isTakingTurn = this.Players[0].isTakingTurn ? false : true;
+        this.Players[1].isTakingTurn = this.Players[1].isTakingTurn ? false : true;
     }
 }
 module.exports.Game = Game;
@@ -73,17 +71,13 @@ class Deck {
                     arr.push(card);
                 }
             });
-            console.log(`arr: ${arr}`);
             return arr;
         }(this.props));
     }
     draw() {
         const i = Math.floor(Math.random() * this.cards.length);
-        console.log(`index for draw card: ${i}`);
         const card = this.cards[i];
         this.cards.splice(i, 1);
-        console.log("cards:");
-        console.log(this.cards);
         return card;
     }
 }

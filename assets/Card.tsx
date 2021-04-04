@@ -30,19 +30,16 @@ class Card {
 
         return card
     }
-    die(): void {
-
-    }
 }
 
 const CHAOS = new Card({ name: 'Chaos', description: 'The primordial god of everything, all that is owes its existence to Chaos', imageURL: './placeholdercard.png', health: 200, attack: 100, defense: 50 })
-CHAOS.action = function (defendingCard: Card) {
-    // Attack function
-    if (!defendingCard.props.health) return
+CHAOS.action = function (attackingCard: Card, defendingCard: Card): Array<Card> {
     // You cannot defend yourself from primordial beings
     // So we ignore defense
-    defendingCard.props.health -= this.props.attack
-    if (defendingCard.props.health <= 0) defendingCard.die()
+    defendingCard.props.health -= attackingCard.props.attack
+    attackingCard.props.defense += 10
+    // Card death is dealt with client side
+    return [attackingCard, defendingCard]
 }
 
 const ZEUS = new Card({ name: 'Zeus', description: 'King of the olympian gods, son of Kronos, a powerful sky deity', attack: 70, health: 150, defense: 25, imageURL: './placeholdercard.png' })

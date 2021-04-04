@@ -89,6 +89,32 @@ io.on("connection", socket => {
         }
     })
 
+    socket.on('attack', async ([attackingCard, defendingCard]) => {
+        // Get the game object and players
+        const game = currentPlayers[socket.id]
+        const attacker = game.Players.find(player => player.props.id === socket.id)
+        const defender = game.Players.find(player => player.props.id !== socket.id)
+        // Find the Object Literal of the attacking card, to use as a way to call the action method
+        const card_a = cardList.find(card => card.name.toLowerCase() === attackingCard.name.toLowerCase())
+        // Check that the socket/user is taking a turn, among other conditions
+        if (attacker?.isTakingTurn && attackingCard.props.attack && defendingCard.props.health) {
+            // Call the action method and return the result
+            const res = await card_a.action(attackingCard, defendingCard)
+            // Send result back to client and opponent
+            socket.emit('attack-res', res)
+            io.sockets.sockets.get(defender.props.id).emit('attack-res', res)
+        } else {
+            socket.emit('err', 'One of the conditions for action was not fulfilled')
+        }
+    })
+
+    socket.on('turn-end', () => {
+        const g = currentPlayers[socket.id]
+        g.endTurn()
+        const defender = g.Players.find(player => player.props.id !== socket.id)
+        io.sockets.sockets.get(defender.props.id).emit('turn-ended')
+    })
+
     socket.on('disconnect', () => { console.log(`${socket.id} Disconnected`.underline) })
 })
 

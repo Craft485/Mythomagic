@@ -26,18 +26,18 @@ class Deck {
                     arr.push(card)
                 }
             })
-            console.log(`arr: ${arr}`)
+            // console.log(`arr: ${arr}`)
             return arr
         }(this.props))
     }
     draw(): Card {
         // Get a random card from the array, return its instance and then remove it
         const i = Math.floor(Math.random() * this.cards.length)
-        console.log(`index for draw card: ${i}`)
+        // console.log(`index for draw card: ${i}`)
         const card = this.cards[i]
         this.cards.splice(i, 1)
-        console.log("cards:");
-        console.log(this.cards)
+        // console.log("cards:");
+        // console.log(this.cards)
         return card
     }
 }
