@@ -6,7 +6,9 @@ const Game = {
     myHand: {},
     myCardsInPlay: {},
     opponentsHand: {},
-    isMyTurn: false
+    isMyTurn: false,
+    opponentsHealth: 500,
+    myHealth: 500
 }
 
 function draw() {
@@ -27,8 +29,8 @@ function play(cardName) {
 
 function action(myCard, opCard) {
     const card = Game.myCardsInPlay[myCard]
-    const _opCard = Game.opponentsHand[opCard]
-    if (card.props?.attack && _opCard.props?.health) {
+    const _opCard = opCard.toLowerCase() === 'player' ? {a: 'player', health: Game.opponentsHealth} : Game.opponentsHand[opCard]
+    if (card.props?.attack) {
         // Server will deal with the actual action
         socket.emit('attack', [card, _opCard])
     }
@@ -40,7 +42,7 @@ function endTurn() {
 }
 
 // Socket event listeners
-socket.on('confirm', (msg, s) => {console.info(msg); Game.isMyTurn = s || false;})
+socket.on('confirm', (msg, s) => {console.info(`${msg}`); Game.isMyTurn = s || false;})
 
 socket.on('err', errmsg => console.error(`Err: ${errmsg}`))
 
@@ -70,9 +72,11 @@ socket.on('attack-res', res => {
     // Update game state
     if (Game.isMyTurn) {
         Game.myCardsInPlay[res[0].name] = res[0]
-        Game.opponentsHand[res[1].name] = res[1]
+        res[1].props.defense ? Game.opponentsHand[res[1].name] = res[1] : Game.opponentsHealth = res[1].props.health
     } else if (!Game.isMyTurn) {
         Game.opponentsHand[res[0].name] = res[0]
-        Game.myCardsInPlay[res[1].name] = res[1]
+        res[1].props.defense ? Game.myCardsInPlay[res[1].name] = res[1] : Game.myHealth = res[1].props.health
     }
+    /** @todo: add updates to UI, also, add a UI */
+    /** @todo: add event to deal with card deaths */
 })

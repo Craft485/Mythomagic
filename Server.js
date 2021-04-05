@@ -60,7 +60,7 @@ io.on("connection", socket => {
             isCurrentGame = true
         }
         Object.defineProperty(currentPlayers, socket.id, { value: games[games.length -1] })
-        const firstTurn = currentPlayers[socket.id].Players[0].id === socket.id ? true : false
+        const firstTurn = currentPlayers[socket.id].Players[0].props.id === socket.id ? true : false
         socket.emit('confirm', 'Joined a lobby', firstTurn)
     })
 
@@ -98,14 +98,17 @@ io.on("connection", socket => {
         // Find the Object Literal of the attacking card, to use as a way to call the action method
         const card_a = cardList.find(card => card.name.toLowerCase() === attackingCard.name.toLowerCase())
         // Check that the socket/user is taking a turn, among other conditions
-        if (attacker?.isTakingTurn && attackingCard.props.attack && defendingCard.props.health) {
-            // Call the action method and return the result
-            const res = await card_a.action(attackingCard, defendingCard)
-            // Send result back to client and opponent
-            socket.emit('attack-res', res)
-            io.sockets.sockets.get(defender.props.id).emit('attack-res', res)
-        } else {
-            socket.emit('err', 'One of the conditions for action was not fulfilled')
+        if (attacker?.isTakingTurn && attackingCard.props.attack) {
+            if (defendingCard?.props?.health || defendingCard?.health) {
+                // Call the action method and return the result
+                const defendingEntity = defendingCard?.a?.toLowerCase() === 'player' ? defender : defendingCard
+                const res = await card_a.action(attackingCard, defendingEntity)
+                // Send result back to client and opponent
+                socket.emit('attack-res', res)
+                io.sockets.sockets.get(defender.props.id).emit('attack-res', res)
+            } else {
+                socket.emit('err', 'One of the conditions for action was not fulfilled')
+            }
         }
     })
 

@@ -33,7 +33,7 @@ class Game {
     join(id) {
         if (this.Players.length < 3) {
             const f = this.Players.length === 0 ? true : false;
-            const p = new Player({ id: id, deck: _tDeck, isTakingTurn: f });
+            const p = new Player({ id: id, deck: _tDeck, isTakingTurn: f, health: 500 });
             this.Players.push(p);
         }
     }
@@ -91,6 +91,7 @@ class Player {
     constructor(props) {
         this.props = props;
         this.isTakingTurn = props.isTakingTurn || false;
+        this.health = props.health;
     }
 }
 module.exports.Player = Player;
