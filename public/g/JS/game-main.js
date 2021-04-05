@@ -80,3 +80,7 @@ socket.on('attack-res', res => {
     /** @todo: add updates to UI, also, add a UI */
     /** @todo: add event to deal with card deaths */
 })
+
+socket.on('game-over', info => {
+    console.log(`Winner: ${info.w.props.id}\nLoser: ${info.l.props.id}`)
+})

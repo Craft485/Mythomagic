@@ -50,6 +50,16 @@ class Game {
         this.Players[0].isTakingTurn = this.Players[0].isTakingTurn ? false : true;
         this.Players[1].isTakingTurn = this.Players[1].isTakingTurn ? false : true;
     }
+    isGameOver() {
+        const P1 = this.Players[0];
+        const P2 = this.Players[1];
+        if (P1.props.health <= 0 || P2.props.health <= 0) {
+            const r = { w: P1.props.health > 0 ? P1 : P2, l: P1.props.health <= 0 ? P1 : P2 };
+            return r;
+        }
+        else
+            return false;
+    }
 }
 module.exports.Game = Game;
 function shuffle(array) {

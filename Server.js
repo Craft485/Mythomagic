@@ -106,6 +106,11 @@ io.on("connection", socket => {
                 // Send result back to client and opponent
                 socket.emit('attack-res', res)
                 io.sockets.sockets.get(defender.props.id).emit('attack-res', res)
+                const gameOver = game.isGameOver()
+                if (gameOver) {
+                    socket.emit('game-over', gameOver)
+                    io.sockets.sockets.get(defender.props.id).emit('game-over', gameOver)
+                }
             } else {
                 socket.emit('err', 'One of the conditions for action was not fulfilled')
             }
