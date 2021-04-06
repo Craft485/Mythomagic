@@ -1,1 +1,53 @@
-body { margin: 0; background: grey; color: white; }
+html, body {
+    margin: 0; 
+    padding: 0;
+    background: grey; 
+    color: white;
+    height: 100%;
+    width: 100%;
+    user-select: none;
+}
+
+.player > svg {
+    height: 120px;
+    width: 120px;
+    align-self: center;
+    margin: auto;
+}
+
+.player {
+    display: flex;
+    height: 15%;
+    width: 99%;
+    margin: 0 0.5%;
+}
+
+.deck {
+    position: absolute;
+    top: 20%;
+    right: 1%;
+    height: 18%;
+    width: 7%;
+    text-align: center;
+    justify-content: center;
+    border: medium solid black;
+}
+
+#myDeck {
+    top: unset !important;
+    bottom: 20%;
+}
+
+#game-board {
+    display: flex;
+    flex-direction: column;
+    border: medium solid black;
+    height: 69%;
+    width: 90%;
+    margin-left: 0.5%;
+}
+
+.row {
+    height: 25%;
+    border: thin gold dashed;
+}
