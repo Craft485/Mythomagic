@@ -6,6 +6,11 @@ html, body {
     height: 100%;
     width: 100%;
     user-select: none;
+    font-family: sans-serif;
+}
+
+circle {
+    transition: 1.5s;
 }
 
 .player > svg {
@@ -17,9 +22,13 @@ html, body {
 
 .player {
     display: flex;
-    height: 15%;
+    height: fit-content;
     width: 99%;
     margin: 0 0.5%;
+}
+
+#opHD, #myHD {
+    fill: rgb(100, 200, 125);
 }
 
 .deck {
@@ -41,13 +50,42 @@ html, body {
 #game-board {
     display: flex;
     flex-direction: column;
-    border: medium solid black;
-    height: 69%;
+    border: thin solid black;
+    border-radius: 20px;
+    height: 75%;
     width: 90%;
     margin-left: 0.5%;
 }
 
 .row {
+    display: flex;
+    justify-content: space-evenly;
     height: 25%;
-    border: thin gold dashed;
 }
+
+.card {
+    background-color: rgb(98, 98, 98);
+    border: 3px solid black;
+    border-radius: 10px;
+    height: 95%;
+    width: 10%;
+    margin: auto 0;
+    text-align: center;
+}
+
+.card > div {
+    margin-top: 40%;
+}
+
+.card > h1 { background-color: darkgrey; }
+
+.card-b {
+    background-color: rgb(102, 37, 0);
+    background-size: contain;
+    background-repeat: no-repeat;
+    width: 10%;
+}
+
+.dfns { color: rgb(112, 191, 218); }
+.hlth { color: rgb(100, 200, 125); }
+.ttck { color: rgb(255, 100, 100); }

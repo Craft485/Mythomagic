@@ -67,11 +67,13 @@ io.on("connection", socket => {
     socket.on("draw", async (args) => {
         console.log("Draw call received")
         const g = currentPlayers[socket.id]
+        const op = g.Players.find(p => p.props.id !== socket.id)
         const newCard = await g.drawCard(socket.id)
         if (typeof newCard === Error) {
             socket.emit('err', 'An error occured | ACTION: Draw Card')
         } else {
             socket.emit('new-card', newCard)
+            io.sockets.sockets.get(op.props.id).emit('op-new-card')
         }
     })
 
@@ -149,4 +151,4 @@ setTimeout(() => {
     console.log(`Found Dir Count: ${dirs.size}`.magenta)
 }, 1000)
 
-http.listen(conf.port, console.log("SERVER ONLINE".magenta))
+http.listen(process.argv[2], console.log("SERVER ONLINE".magenta))

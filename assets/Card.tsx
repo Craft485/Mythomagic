@@ -20,23 +20,12 @@ class Card {
         this.imgURL = props.imageURL
         this.props = props
     }
-    getHTML(): HTMLDivElement {
-        const card = document.createElement('div')
-        card.style.backgroundImage = this.imgURL
-        card.className = "card"
-
-        const h = document.createElement('h3')
-        h.className = "card-heading"
-
-        return card
-    }
 }
 
 const CHAOS = new Card({ name: 'Chaos', description: 'The primordial god of everything, all that is owes its existence to Chaos', imageURL: './placeholdercard.png', health: 200, attack: 100, defense: 50 })
 CHAOS.action = function (attackingCard: Card, defendingCard: Card | any): Array<Card | Object> {
     // You cannot defend yourself from primordial beings
     // So we ignore defense
-    // defendingCard.props ? defendingCard.props.health -= attackingCard.props.attack : defendingCard.health-= attackingCard.props.attack
     defendingCard.props.health -= attackingCard.props.attack
     attackingCard.props.defense += 10
     // Card death is dealt with client side
