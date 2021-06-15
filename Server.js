@@ -62,6 +62,13 @@ io.on("connection", socket => {
         Object.defineProperty(currentPlayers, socket.id, { value: games[games.length -1] })
         const firstTurn = currentPlayers[socket.id].Players[0].props.id === socket.id ? true : false
         socket.emit('confirm', 'Joined a lobby', firstTurn)
+        // Alert both clients of the game start
+        if (!isCurrentGame) {
+            // Following line is possibly useless
+            socket.emit('game-begin')
+            // const op = currentPlayers[socket.id].Players.find(p => p.props.id !== socket.id)
+            io.sockets.sockets.get(currentPlayers[socket.id].Players.find(p => p.props.id !== socket.id).props.id).emit('game-begin')
+        }
     })
 
     socket.on("draw", async (args) => {
@@ -73,7 +80,8 @@ io.on("connection", socket => {
             socket.emit('err', 'An error occured | ACTION: Draw Card')
         } else {
             socket.emit('new-card', newCard)
-            io.sockets.sockets.get(op.props.id).emit('op-new-card')
+            // Are we drawing the initial cards? If so the opponent's client doesn't care
+            if(!args[0].isGenStartUp) io.sockets.sockets.get(op.props.id).emit('op-new-card')
         }
     })
 
@@ -104,7 +112,7 @@ io.on("connection", socket => {
             if (defendingCard?.props?.health || defendingCard?.health) {
                 // Call the action method and return the result
                 const defendingEntity = defendingCard?.a?.toLowerCase() === 'player' ? defender : defendingCard
-                const res = await card_a.action(attackingCard, defendingEntity)
+                const res = await card_a.action(attackingCard, defendingEntity, attacker, defender)
                 // Send result back to client and opponent
                 socket.emit('attack-res', res)
                 io.sockets.sockets.get(defender.props.id).emit('attack-res', res)

@@ -6,7 +6,9 @@ class Game {
     join(id: string): string | void {
         if (this.Players.length < 3) {
             const f = this.Players.length === 0 ? true : false
-            const p = new Player({ id: id, deck: _tDeck, isTakingTurn: f, health: 500 })
+            // Multiple test decks are needed because Objects are reference types, meaning 2 games at the same time won't work currently.
+            // This should be fixed once I do db stuff
+            const p = new Player({ id: id, deck: f ? _tDeck1: _tDeck2, isTakingTurn: f, health: 500 })
             this.Players.push(p)
         }
     }
@@ -15,7 +17,7 @@ class Game {
         // Get the player
         const player: Player = this.Players.find(player => player.props.id === playerID)
         // Draw a card, make sure we actually can draw a card
-        if (player.isTakingTurn && this.Players.length === 2) {
+        if (/*player.isTakingTurn &&*/ this.Players.length === 2) {
             const card: Card = player.props.deck.draw()
             if (!card) console.error('Could not draw card')
             return card

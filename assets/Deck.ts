@@ -41,6 +41,8 @@ class Deck {
 const m = new Map
 cardList.forEach(card => m.set(card.name, [card, 2]))
 const _tDeck: Deck = new Deck({ deckMap: m })
+const _tDeck1: Deck = new Deck({ deckMap: m })
+const _tDeck2: Deck = new Deck({ deckMap: m })
 
 module.exports.Deck = Deck
 module.exports.shuffle = shuffle

@@ -3,7 +3,8 @@
         "target": "esnext",
         "jsx": "react",
         "outFile": "../tsc.built.js",
-        "removeComments": true
+        "removeComments": true,
+        "declaration": true
     },
     "include": ["public/**/*"],
     "exclude": ["node_modules"],

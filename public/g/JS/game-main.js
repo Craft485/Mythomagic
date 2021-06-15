@@ -51,7 +51,7 @@ const baseCardWithBG = function() {
 }
 
 function draw() {
-    socket.emit('draw')
+    if (document.getElementById('myHand').children.length < 7) socket.emit('draw')
 }
 
 function play(cardName) {
@@ -79,6 +79,12 @@ function endTurn() {
     Game.isMyTurn = false
 }
 
+// This variable is apart of a very dumb fix to a very dumb problem
+// The variable, and the associated code, is in place to
+// start the game, without this logic, the server dies.
+// This variable is set to true if we haven't yet generated the starting hand
+let z = true
+
 // Socket event listeners
 socket.on('confirm', (msg, s) => { 
     console.info(`${msg}`)
@@ -89,9 +95,23 @@ socket.on('confirm', (msg, s) => {
 
 socket.on('err', errmsg => console.error(`Err: ${errmsg}`))
 
+socket.on('game-begin', () => {
+    // Gen initial hand
+    if (Game.isMyTurn) {
+        for (let i=0;i<7;i++) socket.emit('draw', [{ isGenStartUp: true }])
+        endTurn()
+        z = false
+    }
+    for (let i=0;i<7;i++) _opHand.appendChild(baseCardWithBG())
+})
+
 socket.on('turn-ended', () => {
     console.log('Turn ended, it is now your turn')
     Game.isMyTurn = true
+    if (z) {
+        for (let i=0;i<7;i++) socket.emit('draw', [{ isGenStartUp: true }])
+        endTurn()
+    }
 })
 
 socket.on('no-play', (msg) => {
@@ -100,8 +120,12 @@ socket.on('no-play', (msg) => {
 
 socket.on('new-card', card => {
     console.log(card)
-    if (card) Game.myHand[card.name] = card
-    _myHand.appendChild(generateHTML(card))
+    if (card) {
+        Game.myHand[card.name] = card
+        const e = generateHTML(card)
+        e.onclick = () => { play(card.name); e.remove() }
+        _myHand.appendChild(e)
+    }
 })
 
 socket.on('op-new-card', () => {
