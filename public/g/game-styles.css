@@ -84,6 +84,7 @@ circle {
     background-size: contain;
     background-repeat: no-repeat;
     width: 10%;
+    background-position: center;
 }
 
 .dfns { color: rgb(112, 191, 218); }
