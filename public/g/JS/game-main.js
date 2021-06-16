@@ -12,9 +12,11 @@ const Game = {
     actionCount: 2
 }
 
-function generateHTML(card) {
+function generateHTML(card, count) {
     const parent = document.createElement('div')
-    parent.className = `card ${card.name}`
+    parent.className = `card ${count ? card.name + count + ' ' + card.name : card.name}`
+    // We don't use ids because of the scenario of a Poseidon being played by each player for example, it can't be unique
+    // parent.id = count ? card.name + count : card.name
     // parent.style.backgroundImage = card.props.imageURL
 
     const title = document.createElement('h3')
@@ -54,14 +56,31 @@ function draw() {
     if (document.getElementById('myHand').children.length < 7) socket.emit('draw')
 }
 
-function play(cardName) {
+function play(cardNameWithCount) {
+    console.log("Play card event")
     // Update client game state and ui as well as send update to server
-    const card = Game.myHand[cardName]
+    const card = Game.myHand[cardNameWithCount]
+    // console.log(card)
+    // There are two different counts at play here, my brain doesn't enjoy this
+    const cardName = cardNameWithCount.split('_')[0]
     if (card) {
-        Game.myCardsInPlay[cardName] = card
-        delete Game.myHand[cardName]
+        let count = 1
+        !function recurse() {
+            if (!Game.myCardsInPlay[`${cardName}_${count}`]) {
+                Game.myCardsInPlay[`${cardName}_${count}`] = card
+            } else {
+                count++
+                return recurse()
+            }
+        }()
+        Game.myCardsInPlay[cardName + `_${count}`] = card
+        // console.log(count)
+        // console.log(Game.myCardsInPlay[cardName + `_${count}`])
+        delete Game.myHand[cardNameWithCount]
+        // Server doesn't care what count is
         socket.emit('play', [cardName])
-        _myField.appendChild(generateHTML(card))
+        // Update UI
+        _myField.appendChild(generateHTML(card, `_${count}`))
     }
 }
 
@@ -121,9 +140,20 @@ socket.on('no-play', (msg) => {
 socket.on('new-card', card => {
     console.log(card)
     if (card) {
-        Game.myHand[card.name] = card
-        const e = generateHTML(card)
-        e.onclick = () => { play(card.name); e.remove() }
+        // Client Side Game State
+        let count = 1
+        // Concise documentation is an unrealistic expectation :)
+        !function recurse() {
+            if (!Game.myHand[`${card.name}_${count}`]) {
+                Game.myHand[`${card.name}_${count}`] = card
+            } else {
+                count++
+                return recurse()
+            }
+        }()
+        // UI
+        const e = generateHTML(card, `_${count}`)
+        e.onclick = () => { play(card.name + `_${count}`); e.remove() }
         _myHand.appendChild(e)
     }
 })
@@ -133,10 +163,20 @@ socket.on('op-new-card', () => {
 })
 
 socket.on('op-play', card => {
-    Game.opponentsHand[card.name] = card
     console.log("Opponent played card")
+    // Update game state
+    let count = 1
+    !function recurse() {
+        if (!Game.opponentsHand[`${card.name}_${count}`]) {
+            Game.opponentsHand[`${card.name}_${count}`] = card
+        } else {
+            count++
+            return recurse()
+        }
+    }()
+    // Update UI
     _opHand.children[0].remove()
-    _opField.appendChild(generateHTML(card))
+    _opField.appendChild(generateHTML(card, `_${count}`))
 })
 
 socket.on('attack-res', res => {
@@ -178,4 +218,4 @@ socket.on('game-over', info => {
 // Attempt to join a game
 window.onload = socket.emit("join-game")
 
-window.addEventListener('keydown', e => { if (e.key === 'Escape') aFunctionThatIsNotHere?.() })
+// window.addEventListener('keydown', e => { if (!e.metaKey) e.preventDefault() })

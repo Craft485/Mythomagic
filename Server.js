@@ -71,7 +71,7 @@ io.on("connection", socket => {
         }
     })
 
-    socket.on("draw", async (args) => {
+    socket.on("draw", async (args=[]) => {
         console.log("Draw call received")
         const g = currentPlayers[socket.id]
         const op = g.Players.find(p => p.props.id !== socket.id)
@@ -81,7 +81,7 @@ io.on("connection", socket => {
         } else {
             socket.emit('new-card', newCard)
             // Are we drawing the initial cards? If so the opponent's client doesn't care
-            if(!args[0].isGenStartUp) io.sockets.sockets.get(op.props.id).emit('op-new-card')
+            if(!args[0]?.isGenStartUp) io.sockets.sockets.get(op.props.id).emit('op-new-card')
         }
     })
 
