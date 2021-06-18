@@ -100,13 +100,14 @@ io.on("connection", socket => {
         }
     })
 
-    socket.on('attack', async ([attackingCard, defendingCard]) => {
+    socket.on('attack', async ([attackingCard, defendingCard, attackingCardCount, defendingCardCount]) => {
         // Get the game object and players
         const game = currentPlayers[socket.id]
         const attacker = game.Players.find(player => player.props.id === socket.id)
         const defender = game.Players.find(player => player.props.id !== socket.id)
         // Find the Object Literal of the attacking card, to use as a way to call the action method
-        const card_a = cardList.find(card => card.name.toLowerCase() === attackingCard.name.toLowerCase())
+        let card_a = cardList.find(card => card.name.toLowerCase() === attackingCard.props.name.toLowerCase())
+        // console.log(attackingCard)
         // Check that the socket/user is taking a turn, among other conditions
         if (attacker?.isTakingTurn && attackingCard.props.attack) {
             if (defendingCard?.props?.health || defendingCard?.health) {
@@ -114,8 +115,8 @@ io.on("connection", socket => {
                 const defendingEntity = defendingCard?.a?.toLowerCase() === 'player' ? defender : defendingCard
                 const res = await card_a.action(attackingCard, defendingEntity, attacker, defender)
                 // Send result back to client and opponent
-                socket.emit('attack-res', res)
-                io.sockets.sockets.get(defender.props.id).emit('attack-res', res)
+                socket.emit('attack-res', res, attackingCardCount, defendingCardCount)
+                io.sockets.sockets.get(defender.props.id).emit('attack-res', res, attackingCardCount, defendingCardCount)
                 const gameOver = game.isGameOver()
                 if (gameOver) {
                     socket.emit('game-over', gameOver)

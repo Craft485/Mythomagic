@@ -9,11 +9,14 @@ const Game = {
     isMyTurn: false,
     opponentsHealth: 500,
     myHealth: 500,
-    actionCount: 2
+    actionCount: 2,
+    attackingCard: null,
+    defendingCard: null
 }
 
 function generateHTML(card, count) {
     const parent = document.createElement('div')
+    // I'm aware this line makes little sense, but it works!
     parent.className = `card ${count ? card.name + count + ' ' + card.name : card.name}`
     // We don't use ids because of the scenario of a Poseidon being played by each player for example, it can't be unique
     // parent.id = count ? card.name + count : card.name
@@ -23,7 +26,7 @@ function generateHTML(card, count) {
     title.innerHTML = `<b>${card.name}</b>`
 
     const stats = document.createElement('div')
-    stats.innerHTML = `<span class="dfns">${card.props?.defense || 0}</span> / <span class="hlth">${card.props?.health || 0}</span> / <span class="ttck">${card.props?.attack || 0}</span>`
+    stats.innerHTML = `<span class="dfns">${card.props?.defense || card.defense}</span> / <span class="hlth">${card.props?.health || card.health}</span> / <span class="ttck">${card.props?.attack || card.attack}</span>`
 
     parent.appendChild(title)
     parent.appendChild(document.createElement('br'))
@@ -56,11 +59,21 @@ function draw() {
     if (document.getElementById('myHand').children.length < 7) socket.emit('draw')
 }
 
+function attackPlayerDirectly() {
+    // Give the card-select-for-action class to the enemy svg
+    document.getElementsByName('svg')[0].classList.add('card-select-for-action')
+    // Set defendingCard to "player"
+    Game.defendingCard = 'player'
+    // Reset the cards in _opFeild
+    for (let i = 0; i < _opField.children.length; i++) {
+        _opField.children[i].classList.remove('card-select-for-action')
+    }
+}
+
 function play(cardNameWithCount) {
     console.log("Play card event")
     // Update client game state and ui as well as send update to server
     const card = Game.myHand[cardNameWithCount]
-    // console.log(card)
     // There are two different counts at play here, my brain doesn't enjoy this
     const cardName = cardNameWithCount.split('_')[0]
     if (card) {
@@ -74,28 +87,50 @@ function play(cardNameWithCount) {
             }
         }()
         Game.myCardsInPlay[cardName + `_${count}`] = card
-        // console.log(count)
-        // console.log(Game.myCardsInPlay[cardName + `_${count}`])
         delete Game.myHand[cardNameWithCount]
         // Server doesn't care what count is
         socket.emit('play', [cardName])
         // Update UI
-        _myField.appendChild(generateHTML(card, `_${count}`))
+        const newCard = generateHTML(card, `_${count}`)
+        newCard.onclick = () => {
+            Game.attackingCard = Game.myCardsInPlay[`${cardName}_${count}`]
+            // There is a better way to do this yes, that isn't a question
+            // Remove css class from all other cards in _myFeild
+            for (let i = 0; i < _myField.children.length; i++) {
+                _myField.children[i].classList.remove('card-select-for-action')
+            }
+            // Add css class to the newCard element
+            newCard.classList.add('card-select-for-action')
+        }
+        _myField.appendChild(newCard)
+    }
+}
+/** @deprecated */
+function ACTION(myCard = Game.attackingCard, opCard = Game.defendingCard) {
+    const card = Game.myCardsInPlay[myCard]
+    const _opCard = opCard?.toLowerCase?.() === 'player' ? {a: 'player', health: Game.opponentsHealth} : Game.opponentsHand[opCard]
+    if (card.props?.attack) {
+        // Server will deal with the actual action
+        socket.emit('attack', [myCard, _opCard])
     }
 }
 
-function action(myCard, opCard) {
-    const card = Game.myCardsInPlay[myCard]
-    const _opCard = opCard.toLowerCase() === 'player' ? {a: 'player', health: Game.opponentsHealth} : Game.opponentsHand[opCard]
-    if (card.props?.attack) {
-        // Server will deal with the actual action
-        socket.emit('attack', [card, _opCard])
+function action(attackingCard = Game.attackingCard, defendingCard = Game.defendingCard) {
+    // Are we attacking the opponent player or card?
+    const defendingEntity = defendingCard?.toLowerCase?.() === 'player' ? {a: 'player', health: Game.opponentsHealth} : defendingCard
+    const attackingCardCount = document.querySelector(`#${_myField.id} > .card-select-for-action`).classList[1].split('_')[1]
+    const defendingCardCount = document.querySelector(`#${_opField.id} > .card-select-for-action`).classList[1].split('_')[1]
+    if (attackingCard.props?.attack && attackingCardCount && defendingCardCount) {
+        // Server deals with game logic for attacking
+        socket.emit('attack', [attackingCard, defendingEntity, attackingCardCount, defendingCardCount])
     }
 }
 
 function endTurn() {
     socket.emit('turn-end')
     Game.isMyTurn = false
+    Game.attackingCard = null
+    Game.defendingCard = null
 }
 
 // This variable is apart of a very dumb fix to a very dumb problem
@@ -130,6 +165,7 @@ socket.on('turn-ended', () => {
     if (z) {
         for (let i=0;i<7;i++) socket.emit('draw', [{ isGenStartUp: true }])
         endTurn()
+        z = false
     }
 })
 
@@ -142,7 +178,7 @@ socket.on('new-card', card => {
     if (card) {
         // Client Side Game State
         let count = 1
-        // Concise documentation is an unrealistic expectation :)
+        // Concise documentation is an unrealistic expectation
         !function recurse() {
             if (!Game.myHand[`${card.name}_${count}`]) {
                 Game.myHand[`${card.name}_${count}`] = card
@@ -176,11 +212,24 @@ socket.on('op-play', card => {
     }()
     // Update UI
     _opHand.children[0].remove()
-    _opField.appendChild(generateHTML(card, `_${count}`))
+    const newOpCard = generateHTML(card, `_${count}`)
+    newOpCard.onclick = () => {
+        Game.defendingCard = Game.opponentsHand[card.name + `_${count}`]
+        for (let i = 0; i < _opField.children.length; i++) {
+            _opField.children[i].classList.remove('card-select-for-action')
+        }
+        document.getElementsByTagName('svg')[0].classList.remove('card-select-for-action')
+        newOpCard.classList.add('card-select-for-action')
+    }
+    _opField.appendChild(newOpCard)
 })
 
-socket.on('attack-res', res => {
+socket.on('attack-res', (res, attackingCardCount, defendingCardCount) => {
+    // res has 2 levels, the first level has a name property that contains the count, just like how we handle unqiue cards in class names
+    // The second level is the card details/stats and is accessed via looking into props
     console.log(res)
+    if (!res[0].name.includes('_')) res[0].name += `_${attackingCardCount}`
+    if (!res[1].name.includes('_')) res[1].name += `_${defendingCardCount}`
     // Update game state
     if (Game.isMyTurn && res) {
         Game.myCardsInPlay[res[0].name] = res[0]
@@ -191,9 +240,26 @@ socket.on('attack-res', res => {
             // Same as c.item(i)
             const a = c[i]
             const p = a.parentElement
-            if (p?.id === 'myCardsInPlay') a.replaceWith(generateHTML(res[0]))
+            if (p?.id === _myField.id && a.classList.contains(res[0].name)) {
+                const e = generateHTML(res[0].props, '_' + res[0].name.split('_')[1])
+                // This onclick is from the play function, perhaps I shouldn't be copy pasting so much code
+                e.onclick = () => {
+                    Game.attackingCard = Game.myCardsInPlay[res[0].name]
+                    for (let i = 0; i < _myField.children.length; i++) _myField.children[i].classList.remove('card-select-for-action')
+                    e.classList.add('card-select-for-action')
+                }
+                a.replaceWith(e)
+            } else if (p?.id === _opField.id && a.classList.contains(res[1].name)) {
+                const e = generateHTML(res[1].props, '_' + res[1].name.split('_')[1])
+                e.onclick = () => {
+                    Game.defendingCard = Game.opponentsHand[res[1].name]
+                    for (let i = 0; i < _opField.children.length; i++) _opField.children[i].classList.remove('card-select-for-action')
+                    e.classList.add('card-select-for-action')
+                }
+                a.replaceWith(e)
+            }
         }
-
+        // If a player was attacked
         if (!res[1].props?.description) document.getElementById('opHD').innerHTML = res[1].props.health
     } else if (!Game.isMyTurn && res) {
         Game.opponentsHand[res[0].name] = res[0]
@@ -204,7 +270,25 @@ socket.on('attack-res', res => {
             // Same as c.item(i)
             const a = c[i]
             const p = a.parentElement
-            if (p?.id === 'opInPlay') a.replaceWith(generateHTML(res[0]))
+            // Check and load for **attacking** card and then **defending** card
+            if (p?.id === _opField.id && a.classList.contains(res[0].name)) {
+                const e = generateHTML(res[0].props, '_' + res[0].name.split('_')[1])
+                // This onclick is from the play function, perhaps I shouldn't be copy pasting so much code
+                e.onclick = () => {
+                    Game.defendingCard = Game.opponentsHand[res[0].name]
+                    for (let i = 0; i < _opField.children.length; i++) _opField.children[i].classList.remove('card-select-for-action')
+                    e.classList.add('card-select-for-action')
+                }
+                a.replaceWith(e)
+            } else if (p?.id === _myField.id && a.classList.contains(res[1].name)) {
+                const e = generateHTML(res[1].props, '_' + res[1].name.split('_')[1])
+                e.onclick = () => {
+                    Game.attackingCard = Game.myCardsInPlay[res[1].name]
+                    for (let i = 0; i < _myField.children.length; i++) _myField.children[i].classList.remove('card-select-for-action')
+                    e.classList.add('card-select-for-action')
+                }
+                a.replaceWith(e)
+            }
         }
 
         if (!res[1].props?.description) document.getElementById('myHD').innerHTML = res[1].props.health

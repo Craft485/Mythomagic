@@ -90,3 +90,19 @@ circle {
 .dfns { color: rgb(112, 191, 218); }
 .hlth { color: rgb(100, 200, 125); }
 .ttck { color: rgb(255, 100, 100); }
+
+.card-select-for-action { 
+    border-color: green; 
+    border-style: dashed;
+}
+
+#attack-submit {
+    position: absolute;
+    right: 3%;
+    bottom: 3%;
+    padding: 3px 8px;
+    /* border: none; */
+    background: linear-gradient(180deg, rgba(185,14,14,1) 50%, rgba(144,17,17,1) 55%);
+    color: white;
+    font-size: 1.5rem;
+}
