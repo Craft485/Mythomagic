@@ -5,7 +5,7 @@
   "main": "Server.js",
   "scripts": {
     "r": "node Server.js 8080",
-    "cr": "cd ./assets && tsc && cd .. && npm run .",
+    "cr": "cd ./assets && tsc && cd .. && npm run r",
     "c": "cd ./assets && tsc && cd .."
   },
   "repository": {
