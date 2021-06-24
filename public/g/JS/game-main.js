@@ -296,6 +296,11 @@ socket.on('attack-res', (res, attackingCardCount, defendingCardCount) => {
 })
 
 socket.on('game-over', info => {
+    // Create an overlay to block the player from interacting with the playing feild
+    const overlay = document.createElement('div')
+    overlay.id = 'game-end-overlay'
+    overlay.innerText = `Winner:\n${info.w.props.id}\n\nLoser:\n${info.l.props.id}`
+    document.body.appendChild(overlay)
     console.log(`Winner: ${info.w.props.id}\nLoser: ${info.l.props.id}`)
 })
 
